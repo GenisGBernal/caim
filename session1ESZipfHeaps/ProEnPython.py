@@ -4,7 +4,7 @@ import pandas as pd
 
 datos = {}
 
-with open("C:/Users/thema/Desktop/proyectos/caim/lab/session1ESZipfHeaps/salida.txt", "r") as archivo:
+with open("salida.txt", "r") as archivo:
     print(archivo)
     for linea in archivo:
         cantidad, palabra = linea.strip().split(", ")

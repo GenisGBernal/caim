@@ -1,29 +1,15 @@
-"""
-.. module:: CountWords
-
-CountWords
-*************
-
-:Description: CountWords
-
-    Generates a list with the counts and the words in the 'text' field of the documents in an index
-
-:Authors: bejar
-    
-
-:Version: 
-
-:Created on: 04/07/2017 11:58 
-
-"""
-
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import scan
 from elasticsearch.exceptions import NotFoundError, TransportError
 
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
 import argparse
 
-__author__ = 'bejar'
+def func(N, k, beta):
+    return k*(N**beta)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -36,6 +22,8 @@ if __name__ == '__main__':
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
         voc = {}
+        totalWords = 0
+        differentWords = 0
         sc = scan(client, index=index, query={"query" : {"match_all": {}}})
         for s in sc:
             try:
@@ -55,8 +43,19 @@ if __name__ == '__main__':
 
 
         for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
-            print(f'{cnt}, {pal.decode("utf-8")}')
-        print('--------------------')
-        print(f'{len(lpal)} Words')
+            totalWords += cnt
+            differentWords += 1
+        
+        print(f'Total words: {totalWords}')
+        print(f'Different words: {differentWords}')
+
+        # Curve fitting
+        popt, pcov = curve_fit(func,totalWords,differentWords)
+        k = popt[0]
+        beta = popt[1]
+        print('Heaps Optimal Parameters')
+        print('K Optimal Value: {k}')
+        print('Beta Optimal Value: {beta}')
+
     except NotFoundError:
         print(f'Index {index} does not exists')
