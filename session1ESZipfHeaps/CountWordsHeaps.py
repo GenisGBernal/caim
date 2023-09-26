@@ -8,8 +8,8 @@ from scipy.optimize import curve_fit
 
 import argparse
 
-def func(N, k, beta):
-    return k*(N**beta)
+def func(n, k, beta):
+    return k * (n ** beta)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -22,8 +22,13 @@ if __name__ == '__main__':
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
         voc = {}
-        totalWords = 0
-        differentWords = 0
+        
+        totalCount = 0
+        differentCount = 0
+
+        totalWords = []
+        differentWords = []
+    
         sc = scan(client, index=index, query={"query" : {"match_all": {}}})
         for s in sc:
             try:
@@ -43,8 +48,10 @@ if __name__ == '__main__':
 
 
         for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
-            totalWords += cnt
-            differentWords += 1
+            totalCount += cnt
+            differentCount += 1
+            differentWords.append(differentCount)
+            totalWords.append(totalCount)
         
         print(f'Total words: {totalWords}')
         print(f'Different words: {differentWords}')
@@ -54,8 +61,8 @@ if __name__ == '__main__':
         k = popt[0]
         beta = popt[1]
         print('Heaps Optimal Parameters')
-        print('K Optimal Value: {k}')
-        print('Beta Optimal Value: {beta}')
+        print('K Optimal Value: %d',k)
+        print('Beta Optimal Value: %d', beta)
 
     except NotFoundError:
         print(f'Index {index} does not exists')
