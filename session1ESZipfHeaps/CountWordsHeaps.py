@@ -13,15 +13,15 @@ nltk.download('stopwords')
 
 import argparse
 
-def func(n, k, beta):
-    return k * (n ** beta)
+def func(N, k, beta):
+    return k * (N ** beta)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--alpha', action='store_true', default=False, help='Sort words alphabetically')
     args = parser.parse_args()
 
-    indexes = ["novels_1", "novels_2", "novels_3", "novels_4", "novels_5", "novels_6", "novels_7"]
+    indexes = ["novels1", "novels2", "novels3", "novels4", "novels5"]
 
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
@@ -53,46 +53,43 @@ if __name__ == '__main__':
 
             for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
                 if re.match('^[a-zA-Z]+$', pal.decode('utf-8')) and pal.decode('utf-8') not in set(stopwords.words('english')):
-                    print(pal.decode('utf-8'))
                     totalCount += cnt
                     differentCount += 1
+
             differentWords.append(differentCount)
             totalWords.append(totalCount)
         
         print(f'Total words: {totalWords}')
         print(f'Different words: {differentWords}')
 
-        totalWords = [10944, 17967, 24764, 36784, 66831, 95244]
-        differentWords = [6213, 10944, 17967, 20738, 24764, 36784]
-
         # Curve fitting
         popt, pcov = curve_fit(func,totalWords,differentWords)
         k = popt[0]
         beta = popt[1]
+        print('------------------------')
         print('Heaps Optimal Parameters')
-        print('K Optimal Value: %d', k)
-        print('Beta Optimal Value: %d', beta)
+        print(f'K Optimal Value: {k}')
+        print(f'Beta Optimal Value: {beta}')
 
         # Creating Heaps plot
-        fitArray = []
-        logFitArray = []
+        HeapsArray = []
         for num in totalWords:
-            fitArray.append(func(num,*popt))
-            logFitArray.append(np.log(func(num,*popt)))
+            HeapsArray.append(func(num,*popt))
         
         # Real and Heaps plot
-        plt.plot(totalWords, differentWords, 'b-', label='Real values')
-        plt.plot(totalWords, fitArray,'r-', ls='--', label='Heap\'s law')
+        plt.plot(totalWords, differentWords, label='Valors Reals')
+        plt.plot(totalWords, HeapsArray, ls='--', label='Llei de Heaps')
         plt.legend()
-        plt.xlabel('x = Number of total words')
-        plt.ylabel('y = Number of different words')
+        plt.xlabel('Número de Paraules Totals')
+        plt.ylabel('Número de Paraules Diferents')
         plt.show()
 
-        plt.plot(np.log(totalWords), np.log(differentWords), 'b-', label='Log of real values')
-        plt.plot(np.log(totalWords), logFitArray,'r-',ls='--', label='Log of Heap\'s law')
+        # Real and Heaps logaritmic plot
+        plt.plot(np.log(totalWords), np.log(differentWords), label='Log dels Valors Reals')
+        plt.plot(np.log(totalWords), np.log(HeapsArray), ls='--', label='Log de la Llei de Heaps')
         plt.legend()
-        plt.xlabel('x = Number of total words')
-        plt.ylabel('y = Number of different words')
+        plt.xlabel('Número de Paraules Totals')
+        plt.ylabel('Número de Paraules Diferents')
         plt.show()
 
     except NotFoundError:

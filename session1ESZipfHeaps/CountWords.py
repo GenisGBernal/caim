@@ -53,7 +53,6 @@ if __name__ == '__main__':
         for v in voc:
             lpal.append((v.encode("utf-8", "ignore"), voc[v]))
 
-        total = 0
         for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
             print(f'{cnt}, {pal.decode("utf-8")}')
         print('--------------------')
