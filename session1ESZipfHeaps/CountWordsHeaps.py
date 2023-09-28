@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--alpha', action='store_true', default=False, help='Sort words alphabetically')
     args = parser.parse_args()
 
-    indexes = ["novels1", "novels2", "novels3", "novels4", "novels5"]
+    indexes = ["novels1",  "novels2", "novels3", "novels4", "novels5"]
 
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
