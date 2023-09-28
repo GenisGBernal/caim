@@ -34,36 +34,56 @@ __author__ = 'bejar'
 a = 0.5
 
 def func(x, b, c):
-    return c/(x+b)**a
+    return np.abs(c)/((x+np.abs(b))**a)
 
-def zip(frecuencia_palabras, frecuencia_palabras_logaritimico, num_palabras, log_num_palabras):
-    popt, pcov = curve_fit(func, num_palabras, frecuencia_palabras)
+def zip(frecuencia_palabras, frecuencia_palabras_logaritimico, log):
+    x = range(1,len(frecuencia_palabras)+1)
+    posiciones = []
+    posiciones_log = []
+    for pos in x:
+        posiciones.append(pos)
+        posiciones_log.append(np.log(pos))
+    
+    popt, pcov = curve_fit(func, posiciones, frecuencia_palabras)
     print('b = %d, c = %d' % (popt[0],popt[1]))
-    fitArray = []
-    logFitArray = []
-    for num in frecuencia_palabras:
-        fitArray.append(func(num, *popt))
-        logFitArray.append(np.log(func(num, *popt)))
+    frecuencia_ideal = []
+    frecuencia_ideal_log = []
+    for pos in posiciones:
+        frecuencia_ideal.append(func(pos, *popt))
+        frecuencia_ideal_log.append(np.log(func(pos, *popt)))
 
     print("Calculo zips hecho")
-    
-    zip_lineal(num_palabras, frecuencia_palabras, fitArray)
+    if (log):
+        zip_log(posiciones_log, frecuencia_palabras_logaritimico, frecuencia_ideal_log)
+    else:
+        zip_lineal(posiciones, frecuencia_palabras, frecuencia_ideal)
 
-def zip_lineal(num_palabras, frecuencia_palabras, fitArray):
-    plt.plot(num_palabras, frecuencia_palabras, 'b-', label='Actual frequencies')
-    plt.plot(num_palabras, fitArray,'r-',label='Zipf\'s fit')
+def zip_lineal(posiciones, frecuencia_palabras, frecuencia_ideal):
+    plt.plot(posiciones, frecuencia_palabras, 'b-', label='Freqüència de les paraules')
+    plt.plot(posiciones, frecuencia_ideal,'r-',label='Zipf ideal')
     plt.legend()
-    plt.xlabel('x = Rank of the word (sorted by most frequent)')
-    plt.ylabel('y = Frequency of the word')
+    plt.xlabel('x = Paraules ordenades de major a menor freqüència')
+    plt.ylabel('y = Freqüència de les paraules')
+    plt.show()
+
+def zip_log(posiciones,logFreqArray,logFitArray):
+    plt.plot(posiciones, logFreqArray, 'b-', label='Freqüència de les paraules logarítmic')
+    plt.plot(posiciones, logFitArray,'r-',label='Zipf logarítmic')
+    plt.legend()
+    plt.xlabel('x = Paraules ordenades de major a menor freqüència logarítmic')
+    plt.ylabel('y = Freqüència de les paraules logarítmic')
     plt.show()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--index', default=None, required=True, help='Index to search')
+    parser.add_argument('--index', default='novels', help='Index to search')
     parser.add_argument('--alpha', action='store_true', default=False, help='Sort words alphabetically')
+    parser.add_argument('--log', default=False, help='User log plot')
     args = parser.parse_args()
 
     index = args.index
+    log = args.log
+    log = log == "True"
 
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
@@ -85,61 +105,27 @@ if __name__ == '__main__':
         for v in voc:
             lpal.append((v.encode("utf-8", "ignore"), voc[v]))
 
-        # print("Datos obtenidos")
-
-        # datos = {}
-
-        # for clave, valor in reversed(sorted(lpal, key=lambda x: x[0 if args.alpha else 1])):
-        #     datos[clave] = valor
-
-        # claves_a_eliminar = []
-
-        # for clave, valor in datos.items():
-        #     if not re.match('^[a-zA-Z]+$', clave) or clave in stopwords.words('english'):
-        #         claves_a_eliminar.append(clave)
-
-        # for clave in claves_a_eliminar:
-        #     del datos[clave]
-
-        # print("Datos limpios")
-
-
-        # print("Datos ordenados")
-
-        # frecuencia_palabras = []
-        # frecuencia_palabras_logaritimico = []
-        # num_palabras = range(1, len(datos)+1)
-        # log_num_palabras = np.log(num_palabras)
-
-        # for clave, valor in datos.items():
-        #     frecuencia_palabras.append(valor)
-        #     frecuencia_palabras_logaritimico.append(np.log(valor))
-
-        wordCount = 60000
-        cont = 0
         wordFreqArray = reversed(sorted(lpal, key=lambda x: x[0 if args.alpha else 1]))
         
-        freqArray = [] #Contains the frequency of the words
-        logFreqArray = [] #Contains the log of the frequencies
-        numArray = range(1,wordCount+1) #Ranges from 1 to wordCount
-        logNumArray = np.log(numArray) #Ranges from log(1) to log(wordCount)
-    
+        frecuencia_palabras = []
+        frecuencia_palabras_log = [] 
+
+        count = 0
+
         for pal, cnt in wordFreqArray:
             palabra = pal.decode('utf-8')
             if re.match('^[a-zA-Z]+$', palabra) and palabra not in stopwords.words('english'):
-                # print('%d. %d, %s' % (cont, cnt, pal))
-                cont += 1
-                freqArray.append(cnt)
-                logFreqArray.append(np.log(cnt))
-            if cont >= wordCount:
-                break
-        print('%s Words' % cont)
+                frecuencia_palabras.append(cnt)
+                frecuencia_palabras_log.append(np.log(cnt))
+                count = count + 1
+            # if (count >= 1000):
+            #     break
+
+        print('%s Words' % len(frecuencia_palabras))
 
         print("Metadata obtenido")
 
-        zip(freqArray, logFreqArray, numArray, logFreqArray)
-
-        # zip(frecuencia_palabras, frecuencia_palabras_logaritimico, num_palabras, log_num_palabras)
+        zip(frecuencia_palabras, frecuencia_palabras_log, log)
         
     except NotFoundError:
         print(f'Index {index} does not exists')
