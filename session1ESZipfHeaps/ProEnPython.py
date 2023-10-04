@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import nltk
+import re
+from nltk.corpus import stopwords
+nltk.download('stopwords')
 
 datos = {}
 
@@ -11,6 +15,14 @@ with open("salida.txt", "r") as archivo:
         cantidad = int(cantidad)
         datos[palabra] = cantidad
 
+claves_a_eliminar = []
+
+for clave, valor in datos.items():
+    if not re.match('^[a-zA-Z]+$', clave) or clave in stopwords.words('english'):
+        claves_a_eliminar.append(clave)
+
+for clave in claves_a_eliminar:
+    del datos[clave]
 
 print(len(datos))
 
