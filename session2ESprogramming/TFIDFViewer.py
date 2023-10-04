@@ -89,10 +89,10 @@ def toTFIDF(client, index, file_id):
 
     tfidfw = []
     for (t, w),(_, df) in zip(file_tv, file_df):
-        #
-        # Something happens here
-        #
-        pass
+        tf = w/max_freq;
+        idf = np.log2(dcount/df);
+        wt = tf*idf; 
+        tfidfw.append((t, wt));
 
     return normalize(tfidfw)
 
@@ -102,10 +102,8 @@ def print_term_weigth_vector(twv):
     :param twv:
     :return:
     """
-    #
-    # Program something here
-    #
-    pass
+    for t, w in twv:
+        print(t + ": " + w);
 
 
 def normalize(tw):
@@ -115,10 +113,11 @@ def normalize(tw):
     :param tw:
     :return:
     """
-    #
-    # Program something here
-    #
-    return None
+    w = [w for _, w in tw];
+    magnitude = np.linalg.norm(w);
+    tw_normalized = [(t, w/ magnitude) for t, w in tw];
+
+    return tw_normalized;
 
 
 def cosine_similarity(tw1, tw2):
@@ -128,10 +127,16 @@ def cosine_similarity(tw1, tw2):
     :param tw2:
     :return:
     """
-    #
-    # Program something here
-    #
-    return 0
+    
+    sim = 0;
+    for (t1, wn1),(t2, wn2) in zip(tw1, tw2):
+        sim += wn1*wn2;
+    
+    # Si el vector está normalizado, es tan facil como hacer 
+    # el sumatorio de la multiplicación de los wights del mismo termino?
+
+
+    return sim;
 
 def doc_count(client, index):
     """
