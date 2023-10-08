@@ -55,8 +55,9 @@ if __name__ == '__main__':
             lpal.append((v.encode("utf-8", "ignore"), voc[v]))
 
 
-        for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
-            print(f'{cnt}, {pal.decode("utf-8")}')
+        with open('D:/Users/M/Documents/Universidad/Quatrimestre_9/CAIM/caim/session2ESprogramming/CountNovelsKstem.txt', 'w', encoding='utf-8') as output_file:
+            for pal, cnt in sorted(lpal, key=lambda x: x[0 if args.alpha else 1]):
+                output_file.write(f'{cnt}, {pal.decode("utf-8")}\n')
         print('--------------------')
         print(f'{len(lpal)} Words')
     except NotFoundError:
