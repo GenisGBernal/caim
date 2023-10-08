@@ -129,12 +129,20 @@ def cosine_similarity(tw1, tw2):
     """
     
     sim = 0;
-    for (t1, wn1),(t2, wn2) in zip(tw1, tw2):
-        sim += wn1*wn2;
-    
-    # Si el vector está normalizado, es tan facil como hacer 
-    # el sumatorio de la multiplicación de los wights del mismo termino?
+    i1, i2 = 0;
+    while (i1 < len(tw1) and i2 < len(tw2)):
 
+        t1,wn1 = tw1[i1];
+        t2,wn2 =  tw2[i2];
+
+        if (t1 == t2):
+            sim += wn1*wn2;
+            i1 += 1;
+            i2 += 1;
+        elif t1 < t2:
+            i1 += 1;
+        elif t1 > t2:
+            i2 += 1;
 
     return sim;
 
