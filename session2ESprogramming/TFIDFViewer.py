@@ -129,7 +129,8 @@ def cosine_similarity(tw1, tw2):
     """
     
     sim = 0;
-    i1, i2 = 0;
+    i1 = 0;
+    i2 = 0;
     while (i1 < len(tw1) and i2 < len(tw2)):
 
         t1,wn1 = tw1[i1];
