@@ -90,7 +90,7 @@ if __name__ == '__main__':
         # Insert operation for a document with fields' path' and 'text'
         ldocs.append({'_op_type': 'index', '_index': index, 'path': f, 'text': text})
 
-    client = Elasticsearch()
+    client = Elasticsearch(hosts='http://localhost:9200')
 
     # Tokenizers: whitespace classic standard letter
     my_analyzer = analyzer('default',
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     ind.analyzer(my_analyzer)
 
     # configure the path field so it is not tokenized and we can do exact match search
-    client.indices.put_mapping(doc_type='document', index=index, include_type_name=True, body={
+    client.indices.put_mapping(index=index, body={
         "properties": {
             "path": {
                 "type": "keyword",

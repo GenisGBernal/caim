@@ -90,10 +90,10 @@ def toTFIDF(client, index, file_id):
 
     tfidfw = []
     for (t, w),(_, df) in zip(file_tv, file_df):
-        tf = w/max_freq;
-        idf = np.log2(dcount/df);
-        wt = tf*idf; 
-        tfidfw.append((t, wt));
+        tf = w/max_freq
+        idf = np.log2(dcount/df)
+        wt = tf*idf
+        tfidfw.append((t, wt))
 
     return normalize(tfidfw)
 
@@ -104,11 +104,11 @@ def normalize(tw):
     :param tw:
     :return:
     """
-    w = [w for _, w in tw];
-    magnitude = np.linalg.norm(w);
+    w = [w for _, w in tw]
+    magnitude = np.linalg.norm(w)
     tw_normalized = [(t, w/ magnitude) for t, w in tw];
 
-    return tw_normalized;
+    return tw_normalized
 
 def queryToDic(query):
     queryDic = {}
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     print(query)
 
     try:
-        client = Elasticsearch()
+        client = Elasticsearch(hosts='http://localhost:9200')
         s = Search(using=client, index=index)
 
         if query is not None:
