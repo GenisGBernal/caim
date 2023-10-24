@@ -118,13 +118,20 @@ def queryToDic(query):
             value = float(value)
         elif '~' in elem:
             key, value = elem.split('~')
-            value = float(value)
+            value = 1.0/float(value)
         else:
             key = elem
             value = 1.0
         queryDic[key] = value
         
     return normalize(queryDic)
+
+def dictToQuery(dic):
+    query = []
+    for term in dic:
+        q = term + '^' + str(dic[term])
+        query.append(q)
+    return query
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -168,8 +175,11 @@ if __name__ == '__main__':
                 # originalQuery = {term: weight*a for term, weight in queryDic.items()} # a * query
 
                 newQuery = {term: (queryDic.get(term, 0)*a) + (sumDocuments.get(term, 0)*B/k )  for term in set(sumDocuments) | set(queryDic)} # a*Q + B * (d..dn)/k
-                newQueryOrdered = sorted(newQuery.items(), key=newQuery.itemgetter(1), reverse = True)[:R] # Sort terms and get R most important
-                query = normalize(newQueryOrdered)  ¿esto deberia tener que poder usar ~ o ^ en la nueva query?
+                newQueryOrdered = sorted(newQuery.items(), key=newQuery.itemgetter(1), reverse = True)[:R] # Sort terms and get R most important -> [{term, value}, ...]
+                newQueryOrderedNormalized = normalize(newQueryOrdered)
+                newQueryOrderedNormalizedDic = {term: value for term, value in newQueryOrderedNormalized}
+                query = dictToQuery(newQueryOrderedNormalizedDic) # -> ["term", "term^value",...]
+                Habrá que preguntar si está bien o no lo de dividir 
 
 
         else:
