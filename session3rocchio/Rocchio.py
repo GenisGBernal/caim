@@ -126,12 +126,6 @@ def queryToDic(query):
         
     return normalize(queryDic)
 
-def dictToQuery(dic):
-    query = []
-    for term in dic:
-        q = term + '^' + str(dic[term])
-        query.append(q)
-    return query
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -177,9 +171,9 @@ if __name__ == '__main__':
                 newQuery = {term: (queryDic.get(term, 0)*a) + (sumDocuments.get(term, 0)*B/k )  for term in set(sumDocuments) | set(queryDic)} # a*Q + B * (d..dn)/k
                 newQueryOrdered = sorted(newQuery.items(), key=newQuery.itemgetter(1), reverse = True)[:R] # Sort terms and get R most important -> [{term, value}, ...]
                 newQueryOrderedNormalized = normalize(newQueryOrdered)
-                newQueryOrderedNormalizedDic = {term: value for term, value in newQueryOrderedNormalized}
-                query = dictToQuery(newQueryOrderedNormalizedDic) # -> ["term", "term^value",...]
-                Habrá que preguntar si está bien o no lo de dividir 
+                query = []
+                for (term, value) in newQueryOrderedNormalized:
+                    query.append(term + '^' + str(value))
 
 
         else:
