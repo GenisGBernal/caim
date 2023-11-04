@@ -25,6 +25,7 @@ from elasticsearch.exceptions import NotFoundError
 from elasticsearch.client import CatClient
 
 import argparse
+import operator
 
 from elasticsearch_dsl import Search
 from elasticsearch_dsl.query import Q
@@ -33,11 +34,11 @@ import numpy as np
 
 __author__ = 'bejar'
 
-nrounds = 10 # Iteracions
+nrounds = 3 # Iteracions
 k = 10 # K documents més importants
-R = 10 # Nombre de termes nous a guardar de cada nova query
-a = 2 # alfa a la regla de Rocchio
-B = 1 # beta a la regla de Rocchio, on a > B
+R = 4 # Nombre de termes nous a guardar de cada nova query
+a = 5 # alfa a la regla de Rocchio
+B = 4 # beta a la regla de Rocchio, on a > B
 
 def document_term_vector(client, index, id):
     """
@@ -95,7 +96,8 @@ def toTFIDF(client, index, file_id):
         wt = tf*idf
         tfidfw.append((t, wt))
 
-    return normalize(tfidfw)
+    tfidfwNormalized = normalize(tfidfw)
+    return {term: value for term, value in tfidfwNormalized}
 
 def normalize(tw):
     """
@@ -123,9 +125,11 @@ def queryToDic(query):
             key = elem
             value = 1.0
         queryDic[key] = value
-        
-    return normalize(queryDic)
-
+    queryVector = []
+    for term, value in queryDic.items():
+        queryVector.append((term,value))
+    queryVectorNormalized = normalize(queryVector)
+    return {term: value for term, value in queryVectorNormalized}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -136,7 +140,6 @@ if __name__ == '__main__':
 
     index = args.index
     query = args.query
-    print(query)
 
     try:
         client = Elasticsearch(hosts='http://localhost:9200')
@@ -169,10 +172,10 @@ if __name__ == '__main__':
                 # originalQuery = {term: weight*a for term, weight in queryDic.items()} # a * query
 
                 newQuery = {term: (queryDic.get(term, 0)*a) + (sumDocuments.get(term, 0)*B/k )  for term in set(sumDocuments) | set(queryDic)} # a*Q + B * (d..dn)/k
-                newQueryOrdered = sorted(newQuery.items(), key=newQuery.itemgetter(1), reverse = True)[:R] # Sort terms and get R most important -> [{term, value}, ...]
+                newQueryOrdered = sorted(newQuery.items(), key=operator.itemgetter(1), reverse = True)[:R] # Sort terms and get R most important -> [{term, value}, ...]
                 newQueryOrderedNormalized = normalize(newQueryOrdered)
                 query = []
-                for (term, value) in newQueryOrderedNormalized:
+                for term, value in newQueryOrderedNormalized:
                     query.append(term + '^' + str(value))
 
 
