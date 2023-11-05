@@ -6,29 +6,51 @@ import sys
 
 class Edge:
     def __init__ (self, origin=None):
-        self.origin = ... # write appropriate value
-        self.weight = ... # write appropriate value
-
+        self.origin = origin
+        self.weight = 1
+        self.airportListIndex = airportHash[origin]
+        
     def __repr__(self):
         return "edge: {0} {1}".format(self.origin, self.weight)
+    
+    def incWeight(self):
+        self.weight += 1
         
     ## write rest of code that you need for this class
+    pass
 
 class Airport:
     def __init__ (self, iden=None, name=None):
         self.code = iden
         self.name = name
         self.routes = []
-        self.routeHash = dict()
-        self.outweight =    # write appropriate value
+        self.routeHash = dict() # Incoming airports routes
+        self.outweight =  0 # Number of outgoing airport routes
 
     def __repr__(self):
         return f"{self.code}\t{self.pageIndex}\t{self.name}"
+    
+    def getEdge(self, originCode):
+        return self.routes[self.routeHash[originCode]]
+    
+    def addIncomingEdge(self, originCode):
+        # New incoming edge
+        if (not originCode in self.routeHash): 
+            self.routeHash[len(self.routes)]
+            self.routes.append(Edge(originCode))
+        # Existing incoming edge
+        else: 
+            self.getEdge(originCode).incWeight
 
-edgeList = [] # list of Edge
-edgeHash = dict() # hash of edge to ease the match
+    def incOutWeight(self):
+        self.outweight += 1
+
+# edgeList = [] # list of Edge
+# edgeHash = dict() # hash of edge to ease the match
 airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
+finalPageRank = []
+CONTINUE_PAGE_RANK_THRESHOLD = 0**(-12)
 
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
@@ -42,25 +64,79 @@ def readAirports(fd):
                 raise Exception('not an IATA code')
             a.name=temp[1][1:-1] + ", " + temp[3][1:-1]
             a.code=temp[4][1:-1]
+            airportHash[a.code] = cont
         except Exception as inst:
             pass
         else:
             cont += 1
             airportList.append(a)
-            airportHash[a.code] = a
+
     airportsTxt.close()
     print(f"There were {cont} Airports with IATA code")
 
 
+def getAirport(airportCode):
+    return airportList[airportHash[airportCode]];
+
 def readRoutes(fd):
     print("Reading Routes file from {fd}")
-    # write your code
+    routesTxt = open(fd, "r");
+    cont = 0;
+    for line in routesTxt.readlines():
+        try:
+            temp = line.split(',');
+            if len(temp[2]) != 3 or len(temp[4]) != 3:
+                raise Exception('not an IATA code');
+
+            originCode = temp[2]
+            destinationCode = temp[4]
+
+            if not originCode in airportHash or not destinationCode in airportHash:
+                raise Exception(f"Invalid IATA codes - origin: {originCode} destination: {destinationCode}")
+            
+            getAirport(destinationCode).addIncomingEdge(originCode)
+            getAirport(originCode).incOutweight()
+
+        except Exception as inst:
+            pass
+        else:
+            cont += 1;
+    routesTxt.close()
+    print(f"There were {cont} routes with IATA code")
+
+def endPageRank(P, Q):
+    for x, y in zip(P,Q):
+        if (abs(x-y) > CONTINUE_PAGE_RANK_THRESHOLD):
+            return False
+    return True
 
 def computePageRanks():
-    # write your code
+    print("Start page rank")
+    n = len(airportHash)
+    P = [1/n]*n
+    L = 0.9
+    end = False
+    it = 0
+    while (not end):
+        Q = [0]*n
+        for i in range(n):
+            airport = airportList[i]
+            pageRank = 0
+            for edge in airport.routes:
+                pageRank += P[edge.airportListIndex] * edge.weight / airportList[edge.airportListIndex].outweight # P[j] * w(j,i) / out(j)
+            Q[i] = L * pageRank + (1-L)/n -----_> Preguntar sobre como gestionar los pesos que no tienen ningun wegiht
+        end = endPageRank(P, Q)
+        P = Q
+        it += 1
+    global finalPageRank
+    finalPageRank = P
+    print("End page rank")
+    return it
 
 def outputPageRanks():
-    # write your code
+    print("Start output page rank")
+    print("End output page rank")
+    pass
 
 def main(argv=None):
     readAirports("airports.txt")
