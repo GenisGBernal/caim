@@ -45,12 +45,16 @@ class Airport:
     def incOutWeight(self):
         self.outweight += 1
 
-# edgeList = [] # list of Edge
-# edgeHash = dict() # hash of edge to ease the match
+#Consts
+CONTINUE_PAGE_RANK_THRESHOLD = 0**(-12)
+L = 0.9
+
+#Helpers
 airportList = [] # list of Airport
 airportHash = dict() # hash key IATA code -> Airport
 finalPageRank = []
-CONTINUE_PAGE_RANK_THRESHOLD = 0**(-12)
+
+
 
 def readAirports(fd):
     print("Reading Airport file from {0}".format(fd))
@@ -114,7 +118,6 @@ def computePageRanks():
     print("Start page rank")
     n = len(airportHash)
     P = [1/n]*n
-    L = 0.9
     end = False
     it = 0
     while (not end):
