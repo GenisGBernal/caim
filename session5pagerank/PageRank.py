@@ -138,8 +138,16 @@ def computePageRanks():
 
 def outputPageRanks():
     print("Start output page rank")
+    pVector = []
+    for i in range(len(airportHash)):
+        pVector.append((airportList[i].name, finalPageRank[i]))
+
+    pVector.sort(key = lambda x: x[1], reverse= True)
+
+    for p in pVector:
+        print(f"{p[0]} : {p[1]}")
+
     print("End output page rank")
-    pass
 
 def main(argv=None):
     readAirports("airports.txt")
