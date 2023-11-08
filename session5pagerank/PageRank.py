@@ -24,7 +24,7 @@ class Airport:
         self.code = iden
         self.name = name
         self.routes = []
-        self.routeHash = dict() # Incoming airports routes
+        self.routeHash = dict() # hash key IATA code -> index of edge at self.routes
         self.outweight =  0 # Number of outgoing airport routes
 
     def __repr__(self):
@@ -36,11 +36,11 @@ class Airport:
     def addIncomingEdge(self, originCode):
         # New incoming edge
         if (not originCode in self.routeHash): 
-            self.routeHash[len(self.routes)]
             self.routes.append(Edge(originCode))
+            self.routeHash[originCode] = len(self.routes)
         # Existing incoming edge
         else: 
-            self.getEdge(originCode).incWeight
+            self.getEdge(originCode).incWeight()
 
     def incOutWeight(self):
         self.outweight += 1
@@ -51,7 +51,7 @@ L = 0.9
 
 #Helpers
 airportList = [] # list of Airport
-airportHash = dict() # hash key IATA code -> Airport
+airportHash = dict() # hash key IATA code -> index of airport at airportList
 finalPageRank = []
 
 
@@ -102,7 +102,7 @@ def readRoutes(fd):
             getAirport(originCode).incOutweight()
 
         except Exception as inst:
-            pass
+            print()
         else:
             cont += 1;
     routesTxt.close()
@@ -127,7 +127,7 @@ def computePageRanks():
             pageRank = 0
             for edge in airport.routes:
                 pageRank += P[edge.airportListIndex] * edge.weight / airportList[edge.airportListIndex].outweight # P[j] * w(j,i) / out(j)
-            Q[i] = L * pageRank + (1-L)/n -----_> Preguntar sobre como gestionar los pesos que no tienen ningun wegiht
+            Q[i] = L * pageRank + (1-L)/n 
         end = endPageRank(P, Q)
         P = Q
         it += 1
