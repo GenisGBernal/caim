@@ -36,8 +36,8 @@ class Airport:
     def addIncomingEdge(self, originCode):
         # New incoming edge
         if (not originCode in self.routeHash): 
-            self.routes.append(Edge(originCode))
             self.routeHash[originCode] = len(self.routes)
+            self.routes.append(Edge(originCode))
         # Existing incoming edge
         else: 
             self.getEdge(originCode).incWeight()
