@@ -46,7 +46,7 @@ class Airport:
         self.outweight += 1
 
 #Consts
-CONTINUE_PAGE_RANK_THRESHOLD = 0**(-12)
+CONTINUE_PAGE_RANK_THRESHOLD = 10**(-12)
 L = 0.9
 
 #Helpers
@@ -120,17 +120,24 @@ def computePageRanks():
     P = [1/n]*n
     end = False
     it = 0
+
+    disconnectedVariable = 1.0/n
+    nDisconnected = len(filter(lambda n: n.outweight == 0, airportList))
+    disconnectedFixed = nDisconnected*(L/float(n-1))
+
     while (not end):
         Q = [0]*n
+        disconnectedValue = disconnectedFixed * disconnectedVariable
         for i in range(n):
             airport = airportList[i]
             pageRank = 0
             for edge in airport.routes:
                 pageRank += P[edge.airportListIndex] * edge.weight / airportList[edge.airportListIndex].outweight # P[j] * w(j,i) / out(j)
-            Q[i] = L * pageRank + (1-L)/n 
+            Q[i] = L * pageRank + (1-L)/n + disconnectedValue
         end = endPageRank(P, Q)
         P = Q
         it += 1
+    disconnectedVariable = (1-L)/n + disconnectedValue
     global finalPageRank
     finalPageRank = P
     print("End page rank")
