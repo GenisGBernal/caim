@@ -7,7 +7,7 @@ import sys
 class Edge:
     def __init__ (self, origin=None):
         self.origin = origin
-        self.weight = 1
+        self.weight = 1.0
         self.airportListIndex = airportHash[origin]
         
     def __repr__(self):
@@ -47,7 +47,7 @@ class Airport:
 
 #Consts
 CONTINUE_PAGE_RANK_THRESHOLD = 10**(-12)
-L = 0.9
+L = 0.85
 
 #Helpers
 airportList = [] # list of Airport
@@ -57,8 +57,8 @@ finalPageRank = []
 
 
 def readAirports(fd):
-    print("Reading Airport file from {0}".format(fd))
-    airportsTxt = open(fd, "r");
+    print(f"Reading Airport file from {fd}")
+    airportsTxt = open(fd, "r", encoding='utf-8');
     cont = 0
     for line in airportsTxt.readlines():
         a = Airport()
@@ -68,10 +68,10 @@ def readAirports(fd):
                 raise Exception('not an IATA code')
             a.name=temp[1][1:-1] + ", " + temp[3][1:-1]
             a.code=temp[4][1:-1]
-            airportHash[a.code] = cont
         except Exception as inst:
             pass
         else:
+            airportHash[a.code] = cont
             cont += 1
             airportList.append(a)
 
@@ -83,8 +83,8 @@ def getAirport(airportCode):
     return airportList[airportHash[airportCode]];
 
 def readRoutes(fd):
-    print("Reading Routes file from {fd}")
-    routesTxt = open(fd, "r");
+    print(f"Reading Routes file from {fd}")
+    routesTxt = open(fd, "r", encoding='utf-8');
     cont = 0;
     for line in routesTxt.readlines():
         try:
@@ -99,10 +99,10 @@ def readRoutes(fd):
                 raise Exception(f"Invalid IATA codes - origin: {originCode} destination: {destinationCode}")
             
             getAirport(destinationCode).addIncomingEdge(originCode)
-            getAirport(originCode).incOutweight()
+            getAirport(originCode).incOutWeight()
 
         except Exception as inst:
-            print()
+            pass
         else:
             cont += 1;
     routesTxt.close()
@@ -117,27 +117,28 @@ def endPageRank(P, Q):
 def computePageRanks():
     print("Start page rank")
     n = len(airportHash)
-    P = [1/n]*n
+    P = [1.0/n]*n
     end = False
     it = 0
 
+    nDisconnected = len(list(filter(lambda n: n.outweight == 0, airportList)))
     disconnectedVariable = 1.0/n
-    nDisconnected = len(filter(lambda n: n.outweight == 0, airportList))
-    disconnectedFixed = nDisconnected*(L/float(n-1))
+    disconnectedFixed = L/float(n)*nDisconnected
 
     while (not end):
-        Q = [0]*n
+        Q = [0.0]*n
         disconnectedValue = disconnectedFixed * disconnectedVariable
         for i in range(n):
             airport = airportList[i]
             pageRank = 0
             for edge in airport.routes:
                 pageRank += P[edge.airportListIndex] * edge.weight / airportList[edge.airportListIndex].outweight # P[j] * w(j,i) / out(j)
-            Q[i] = L * pageRank + (1-L)/n + disconnectedValue
+            Q[i] = L * pageRank + (1.0-L)/n + disconnectedValue
         end = endPageRank(P, Q)
         P = Q
+        print("sum PR (iter", it, "):" , sum(i for i in P)) 
         it += 1
-    disconnectedVariable = (1-L)/n + disconnectedValue
+        disconnectedVariable = (1.0-L)/n + disconnectedValue
     global finalPageRank
     finalPageRank = P
     print("End page rank")
@@ -152,7 +153,11 @@ def outputPageRanks():
     pVector.sort(key = lambda x: x[1], reverse= True)
 
     for p in pVector:
-        print(f"{p[0]} : {p[1]}")
+        try:
+            print(f"{p[0]} : {p[1]}")
+        except UnicodeEncodeError as e:
+            # Handle the encoding error by ignoring or replacing problematic characters
+            print(f"{p[0]} : {p[1]}".encode('utf-8', 'ignore').decode('cp1252', 'ignore'))
 
     print("End output page rank")
 
