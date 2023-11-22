@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     index = args.index
     try:
-        client = Elasticsearch()
+        client = Elasticsearch(hosts='http://localhost:9200')
         sc = scan(client, index=index, query={"query": {"match_all": {}}})
         for r in sc:
             print(r['_source']['path'], '\t', r['_source']['text'].encode('ascii','replace'))
