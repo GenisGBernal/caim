@@ -61,14 +61,38 @@ if __name__ == '__main__':
             # Process the results of the script iterating the (key,value) pairs
             for key, value in mr_job1.parse_output(runner1.cat_output()):
                 # You should store things here probably in a datastructure
+                new_assign[key] = value[0]
+                new_proto[key] = value[1]
 
             # If your scripts returns the new assignments you could write them in a file here
-
-            # You should store the new prototypes here for the next iteration
+            new_assign_file = open(cwd + '/assignaments%d.txt' %(i+1), 'w')
+            for key in new_assign:
+                output = f"{key}:"
+                for item in new_assign[key]:
+                    output += f"{item} "
+                new_assign_file.write(f"{output}\n")
+            new_assign_file.close()
 
             # If you have saved the assignments, you can check if they have changed from the previous iteration
+            if new_assign == new_assign_file:
+                nomove = True
+            
+            assign = new_assign
 
-        print(f"Time= {(time.time() - tinit)} seconds" % )
+            # You should store the new prototypes here for the next iteration
+            if (i + 1) == args.iter or nomove:
+                new_proto_file = open(cwd + '/prototypes_last.txt', 'w')
+            else:
+                new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
+            
+            for key in new_proto:
+                output = f"{key}:"
+                for item in new_proto[key]:
+                    output += f"{item[0]} + {str(item[1])} "
+                new_proto_file.write(f"{output}\n")
+            new_proto_file.close()
+
+        print(f"Time= {(time.time() - tinit)} seconds")
 
         if nomove:  # If there is no changes in two consecutive iteration we can stop
             print("Algorithm converged")
