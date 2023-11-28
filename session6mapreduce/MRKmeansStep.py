@@ -76,13 +76,13 @@ class MRKmeansStep(MRJob):
 
         :return:
         """
-        f = open(self.options.prot, 'r')
-        for line in f:
-            cluster, words = line.split(':')
-            cp = []
-            for word in words.split():
-                cp.append((word.split('+')[0], float(word.split('+')[1])))
-            self.prototypes[cluster] = cp
+        with open(self.options.prot, 'r') as f:
+            for line in f:
+                cluster, words = line.split(':')
+                cp = []
+                for word in words.split():
+                    cp.append((word.split('+')[0], float(word.split('+')[1])))
+                self.prototypes[cluster] = cp
 
     def assign_prototype(self, _, line):
         """
