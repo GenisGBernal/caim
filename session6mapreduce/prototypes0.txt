@@ -1,2 +1,0 @@
-CLASS0:4+1.0 anything+1.0 it's+1.0 something+1.0 system+1.0 use+1.0 who+1.0 
-CLASS1:because+1.0 believe+1.0 better+1.0 could+1.0 fact+1.0 give+1.0 he+1.0 his+1.0 how+1.0 i'm+1.0 into+1.0 it's+1.0 never+1.0 new+1.0 said+1.0 say+1.0 should+1.0 still+1.0 than+1.0 their+1.0 time+1.0 university+1.0 up+1.0 when+1.0 while+1.0 why+1.0 years+1.0 
