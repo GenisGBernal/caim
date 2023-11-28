@@ -35,14 +35,14 @@ class MRKmeansStep(MRJob):
 
         The result should be always a value in the range [0,1]
         """
-        intersect = 0
-        union = 0
+        intersectCustom = 0
+        unionCustom = 0
         i = 0
         j = 0
         while i < len(prot) and j < len(doc):
-            union += 1
+            unionCustom += 1
             if (prot[i][0] == doc[j]):
-                intersect += 1
+                intersectCustom += 1
                 i += 1
                 j += 1
             elif prot[i][0] < doc[j]:
@@ -52,13 +52,13 @@ class MRKmeansStep(MRJob):
 
         while i < len(prot):
             i += 1
-            union += 1
+            unionCustom += 1
         
         while j < len(doc):
             j += 1
-            union += 1
+            unionCustom += 1
 
-        return intersect / float(union)
+        return intersectCustom / float(unionCustom**2 - intersectCustom)
 
 
     def configure_args(self):
