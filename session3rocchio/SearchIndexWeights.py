@@ -45,7 +45,7 @@ if __name__ == '__main__':
     nhits = args.nhits
 
     try:
-        client = Elasticsearch()
+        client = Elasticsearch(hosts='http://localhost:9200')
         s = Search(using=client, index=index)
 
         if query is not None:
