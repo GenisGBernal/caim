@@ -52,14 +52,14 @@ class MRKmeansStep(MRJob):
                 
         return intersectionSize / float(unionSize - intersectionSize)
 
-    def configure_options(self):
+    def configure_args(self):
         """
         Additional configuration flag to get the prototypes files
 
         :return:
         """
-        super(MRKmeansStep, self).configure_options()
-        self.add_file_option('--prot')
+        super(MRKmeansStep, self).configure_args()
+        self.add_file_arg('--prot')
 
     def load_data(self):
         """
