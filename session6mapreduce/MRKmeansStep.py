@@ -17,11 +17,11 @@ MRKmeansDef
 
 """
 
+from __future__ import division
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
 __author__ = 'bejar'
-
 
 class MRKmeansStep(MRJob):
     prototypes = {}
@@ -35,22 +35,22 @@ class MRKmeansStep(MRJob):
 
         The result should be always a value in the range [0,1]
         """
-        intersectCustom = 0
-        unionCustom = len(prot) + len(doc)
+        unionSize = len(prot) + len(doc)
+        #intersectionSize = len([word for word in prot if prot[0] in doc])
+        intersectionSize = 0
         i = 0
         j = 0
-        while i < len(prot) and j < len(doc):
-            if (prot[i][0] == doc[j]):
-                intersectCustom += 1
+        while(i < len(prot) and j < len(doc)):
+            if prot[i][0] == doc[j]:
+                intersectionSize += 1
                 i += 1
                 j += 1
             elif prot[i][0] < doc[j]:
                 i += 1
             else:
                 j += 1
-
-        return intersectCustom / float(unionCustom - intersectCustom)
-
+                
+        return intersectionSize / float(unionSize - intersectionSize)
 
     def configure_args(self):
         """
@@ -89,18 +89,20 @@ class MRKmeansStep(MRJob):
         # Each line is a string docid:wor1 word2 ... wordn
         doc, words = line.split(':')
         lwords = words.split()
-
-        bestDist = float('inf')
-        prototype = None
-
-        for k,v in self.prototypes.items():
-            dist = self.jaccard(v, lwords)
-            if (dist < bestDist):
-                bestDist = dist
-                prototype = k
-
+            
+        #
+        # Compute map here
+        #
+        minDistance = -1
+        assignedPrototype = 'none'
+        for key in self.prototypes:
+            auxDistance = self.jaccard(self.prototypes[key],lwords)
+            if(minDistance == -1 or auxDistance < minDistance):
+                minDistance = auxDistance
+                assignedPrototype = key
+            
         # Return pair key, value
-        yield prototype, (doc, lwords)
+        yield assignedPrototype, (doc,lwords)
 
     def aggregate_prototype(self, key, values):
         """
@@ -119,28 +121,24 @@ class MRKmeansStep(MRJob):
         :param values:
         :return:
         """
-
-        nDocuments = 0
-        documentList = []
-        prototypeMap = {}
-
-        for document in values:
-            nDocuments += 1
-            documentList.append(document[0])
-            for word in document[1]:
-                if word in prototypeMap:
-                    prototypeMap[word] += 1
+        myKey = key
+        nextPrototype = {}
+        nextPrototypeDocs = []
+        docsInCluster = 0
+        for doc in values:
+            docsInCluster += 1
+            nextPrototypeDocs.append(doc[0])
+            for word in doc[1]:
+                if word in nextPrototype:
+                    nextPrototype[word] += 1
                 else:
-                    prototypeMap[word] = 1
-
-        finalPrototype = []
-        for word, freq in prototypeMap.items():
-            finalPrototype.append((word, freq/float(nDocuments)))
+                    nextPrototype[word] = 1
         
-        orderedDocumentList = sorted(documentList)
-        orderedFinalPrototype = sorted(finalPrototype, key = lambda x: x[0])
-
-        yield key, (orderedDocumentList, orderedFinalPrototype)
+        returnPrototype = []
+        for word in nextPrototype:
+            returnPrototype.append((word,nextPrototype[word]/float(docsInCluster)))
+    
+        yield myKey, (sorted(nextPrototypeDocs),sorted(returnPrototype, key=lambda x: x[0]))
 
     def steps(self):
         return [MRStep(mapper_init=self.load_data, mapper=self.assign_prototype,

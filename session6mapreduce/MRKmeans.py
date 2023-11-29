@@ -61,36 +61,36 @@ if __name__ == '__main__':
             # Process the results of the script iterating the (key,value) pairs
             for key, value in mr_job1.parse_output(runner1.cat_output()):
                 # You should store things here probably in a datastructure
+                # print(key)
                 new_assign[key] = value[0]
-                new_proto[key] = value[1]
+                new_proto[key]  = value[1]
 
             # If your scripts returns the new assignments you could write them in a file here
-            new_assign_file = open(cwd + '/assignaments%d.txt' %(i+1), 'w')
+            assignFile = open(cwd + '/assignments%d.txt' %(i+1), 'w')
             for key in new_assign:
-                output = f"{key}:"
+                aux = key + ':'
                 for item in new_assign[key]:
-                    output += f"{item} "
-                new_assign_file.write(f"{output}\n")
-            new_assign_file.close()
-
-            # If you have saved the assignments, you can check if they have changed from the previous iteration
-            if new_assign == new_assign_file:
-                nomove = True
-            
-            assign = new_assign
+                    aux += (item + ' ')
+                assignFile.write(aux + '\n')
+            assignFile.close()
 
             # You should store the new prototypes here for the next iteration
-            
-            new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
-            for key in new_proto:
-                output = f"{key}:"
-                for item in new_proto[key]:
-                    output += f"{item[0]}+{repr(item[1])} "
-                output = output[:-1]
-                new_proto_file.write(f"{output}\r\n")
-            new_proto_file.close()
+            nomove = new_assign == assign
+            assign = new_assign
 
-        print(f"Time= {(time.time() - tinit)} seconds")
+            f = ('/prototypes%d.txt' %(i+1), '/prototypes-final.txt')[(i+1 == args.iter) or nomove]
+            protoFile = open(cwd + f, 'w');
+
+            for key in new_proto:
+                aux = key + ':'
+                for item in new_proto[key]:
+                    aux += item[0] + '+' + repr(item[1]) + ' '
+                aux = aux[0:len(aux)-1]
+                protoFile.write(aux + '\r\n')
+            protoFile.close()
+            # If you have saved the assignments, you can check if they have changed from the previous iteration
+
+        print("Time= %f seconds" % (time.time() - tinit))
 
         if nomove:  # If there is no changes in two consecutive iteration we can stop
             print("Algorithm converged")
