@@ -84,7 +84,7 @@ if __name__ == '__main__':
             new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
             for key in new_proto:
                 output = f"{key}:"
-                print("Len: " + len(new_proto[key]))
+                print("Len: " + str(len(new_proto[key])))
                 for item in new_proto[key]:
                     output += f"{item[0]}+{repr(item[1])} "
                 output = output[:-1]

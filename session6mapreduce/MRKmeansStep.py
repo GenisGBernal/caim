@@ -93,8 +93,8 @@ class MRKmeansStep(MRJob):
         bestDist = float('inf')
         prototype = None
 
-        for k,v in self.prototypes.items():
-            dist = self.jaccard(v, lwords)
+        for k in self.prototypes:
+            dist = self.jaccard(self.prototypes[k], lwords)
             if (dist < bestDist):
                 bestDist = dist
                 prototype = k
@@ -134,8 +134,8 @@ class MRKmeansStep(MRJob):
                     prototypeMap[word] = 1
 
         finalPrototype = []
-        for word, freq in prototypeMap.items():
-            finalPrototype.append((word, freq/float(nDocuments)))
+        for word in prototypeMap:
+            finalPrototype.append((word, prototypeMap[word]/float(nDocuments)))
         
         orderedDocumentList = sorted(documentList)
         orderedFinalPrototype = sorted(finalPrototype, key = lambda x: x[0])
