@@ -36,11 +36,10 @@ class MRKmeansStep(MRJob):
         The result should be always a value in the range [0,1]
         """
         intersectCustom = 0
-        unionCustom = 0
+        unionCustom = len(prot) + len(doc)
         i = 0
         j = 0
         while i < len(prot) and j < len(doc):
-            unionCustom += 1
             if (prot[i][0] == doc[j]):
                 intersectCustom += 1
                 i += 1
@@ -50,15 +49,7 @@ class MRKmeansStep(MRJob):
             else:
                 j += 1
 
-        while i < len(prot):
-            i += 1
-            unionCustom += 1
-        
-        while j < len(doc):
-            j += 1
-            unionCustom += 1
-
-        return intersectCustom / float(unionCustom**2 - intersectCustom)
+        return intersectCustom / float(unionCustom - intersectCustom)
 
 
     def configure_args(self):
@@ -99,13 +90,13 @@ class MRKmeansStep(MRJob):
         doc, words = line.split(':')
         lwords = words.split()
 
-        bestSimilarity = 0
-        prototype = "null"
+        bestDist = float('inf')
+        prototype = None
 
         for k,v in self.prototypes.items():
-            similarity = self.jaccard(v, lwords)
-            if (similarity > bestSimilarity):
-                bestSimilarity = similarity
+            dist = self.jaccard(v, lwords)
+            if (dist < bestDist):
+                bestDist = dist
                 prototype = k
 
         # Return pair key, value
@@ -135,7 +126,7 @@ class MRKmeansStep(MRJob):
 
         for document in values:
             nDocuments += 1
-            documentList.append(document)
+            documentList.append(document[0])
             for word in document[1]:
                 if word in prototypeMap:
                     prototypeMap[word] += 1
