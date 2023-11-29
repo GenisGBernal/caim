@@ -80,17 +80,15 @@ if __name__ == '__main__':
             assign = new_assign
 
             # You should store the new prototypes here for the next iteration
-            if (i + 1) == args.iter or nomove:
-                new_proto_file = open(cwd + '/prototypes_last.txt', 'w')
-            else:
-                new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
             
+            new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
             for key in new_proto:
                 output = f"{key}:"
                 print("Len: " + len(new_proto[key]))
                 for item in new_proto[key]:
-                    output += f"{item[0]} + {str(item[1])} "
-                new_proto_file.write(f"{output}\n")
+                    output += f"{item[0]}+{repr(item[1])} "
+                output = output[:-1]
+                new_proto_file.write(f"{output}\r\n")
             new_proto_file.close()
 
         print(f"Time= {(time.time() - tinit)} seconds")
