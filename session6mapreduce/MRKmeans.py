@@ -87,6 +87,7 @@ if __name__ == '__main__':
             
             for key in new_proto:
                 output = f"{key}:"
+                print("Len: " + len(new_proto[key]))
                 for item in new_proto[key]:
                     output += f"{item[0]} + {str(item[1])} "
                 new_proto_file.write(f"{output}\n")
