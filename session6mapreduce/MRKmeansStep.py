@@ -122,7 +122,10 @@ class MRKmeansStep(MRJob):
             docsInCluster += 1
             nextProtoDocs.append(doc[0])
             for word in doc[1]:
-                nextProto[word] = (1, nextProto[word]+1)[word in nextProto]
+                if word in nextPrototype:
+                    nextPrototype[word] += 1
+                else:
+                    nextPrototype[word] = 1
         
         ret = [] # word, freq
         for word in nextProto:
