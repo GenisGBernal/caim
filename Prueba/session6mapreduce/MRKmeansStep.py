@@ -35,27 +35,22 @@ class MRKmeansStep(MRJob):
 
         The result should be always a value in the range [0,1]
         """
-        intersection = 0
+        intersectCustom = 0
+        unionCustom = len(prot) + len(doc)
         i = 0
         j = 0
-        while (i < len(prot) and j < len(doc)):
-            if (prot[i][0] < doc[j]):
+        while i < len(prot) and j < len(doc):
+            if (prot[i][0] == doc[j]):
+                intersectCustom += 1
                 i += 1
-            elif (prot[i][0] > doc[j]):
                 j += 1
+            elif prot[i][0] < doc[j]:
+                i += 1
             else:
-                intersection += prot[i][1]
-                i += 1
                 j += 1
 
-        # (norm_2)^2 = sum of squares
-        union = 0
-        for i in range(len(prot)):
-            union += prot[i][1]**2
-        
-        union += len(doc)   # knowing that 1^2 = 1, norm_2(doc) = len(doc)
+        return intersectCustom / float(unionCustom**2 - intersectCustom)
 
-        return float(intersection)/float(union - intersection)
 
     def configure_args(self):
         """
@@ -72,13 +67,13 @@ class MRKmeansStep(MRJob):
 
         :return:
         """
-        f = open(self.options.prot, 'r')
-        for line in f:
-            cluster, words = line.split(':')
-            cp = []
-            for word in words.split():
-                cp.append((word.split('+')[0], float(word.split('+')[1])))
-            self.prototypes[cluster] = cp
+        with open(self.options.prot, 'r') as f:
+            for line in f:
+                cluster, words = line.split(':')
+                cp = []
+                for word in words.split():
+                    cp.append((word.split('+')[0], float(word.split('+')[1])))
+                self.prototypes[cluster] = cp
 
     def assign_prototype(self, _, line):
         """
@@ -95,23 +90,17 @@ class MRKmeansStep(MRJob):
         doc, words = line.split(':')
         lwords = words.split()
 
-        #
-        # Compute map here
-        assignedProt = next(iter(self.prototypes))
-        minDist = 1-self.jaccard(self.prototypes[assignedProt], lwords) # distance is complement of jaccard similarity
+        bestDist = float('inf')
+        prototype = None
 
-        f = open("./output.txt", 'w')
-        
         for k,v in self.prototypes.items():
-            dist = 1-self.jaccard(v, lwords)
-            f.write(str(dist))
-            if (dist < minDist):
-                minDist = dist
-                assignedProt = k
+            dist = self.jaccard(v, lwords)
+            if (dist < bestDist):
+                bestDist = dist
+                prototype = k
 
-        f.close()
         # Return pair key, value
-        yield assignedProt, (doc,lwords)
+        yield prototype, (doc, lwords)
 
     def aggregate_prototype(self, key, values):
         """
@@ -131,28 +120,27 @@ class MRKmeansStep(MRJob):
         :return:
         """
 
-        n = 0
-        docList = []
-        protoMap = dict()
+        nDocuments = 0
+        documentList = []
+        prototypeMap = {}
 
-        for doc in values:
-            n += 1
-            docList.append(doc[0])
-            for token in doc[1]:
-                if token in protoMap:
-                    protoMap[token] += 1
+        for document in values:
+            nDocuments += 1
+            documentList.append(document[0])
+            for word in document[1]:
+                if word in prototypeMap:
+                    prototypeMap[word] += 1
                 else:
-                    protoMap[token] = 1
+                    prototypeMap[word] = 1
 
-        # List of pairs (term, freq)
-        termList = []
-        for k,v in protoMap.items():
-            termList.append((k, float(protoMap[k])/float(n)))
-            
-        docList = sorted(docList)
-        termList = sorted(termList, key = lambda x: x[0])
+        finalPrototype = []
+        for word, freq in prototypeMap.items():
+            finalPrototype.append((word, freq/float(nDocuments)))
+        
+        orderedDocumentList = sorted(documentList)
+        orderedFinalPrototype = sorted(finalPrototype, key = lambda x: x[0])
 
-        yield key, (docList, termList)
+        yield key, (orderedDocumentList, orderedFinalPrototype)
 
     def steps(self):
         return [MRStep(mapper_init=self.load_data, mapper=self.assign_prototype,
