@@ -40,7 +40,7 @@ class MRKmeansStep(MRJob):
         j = 0
         while i < len(prot) and j < len(doc):
             if (prot[i][0] == doc[j]):
-                intersectCustom += 1
+                intersectCustom += prot[i][1]
                 i += 1
                 j += 1
             elif prot[i][0] < doc[j]:
