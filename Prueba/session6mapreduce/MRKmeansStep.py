@@ -35,7 +35,7 @@ class MRKmeansStep(MRJob):
 
         The result should be always a value in the range [0,1]
         """
-        unionCustom = len(prot) + len(doc)
+        intersectCustom = 0
         i = 0
         j = 0
         while i < len(prot) and j < len(doc):
@@ -48,11 +48,9 @@ class MRKmeansStep(MRJob):
             else:
                 j += 1
 
-                union = 0
-
-        intersectCustom = len(doc)     
+        unionCustom = len(doc)
         for i in range(len(prot)):
-            intersectCustom += prot[i][1]**2
+            unionCustom += prot[i][1]**2
 
         return intersectCustom / float(unionCustom - intersectCustom)
 
