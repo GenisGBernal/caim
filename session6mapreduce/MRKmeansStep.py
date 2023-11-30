@@ -49,7 +49,7 @@ class MRKmeansStep(MRJob):
             else:
                 j += 1
 
-        return intersectCustom / float(unionCustom - intersectCustom)
+        return intersectCustom / float(unionCustom**2 - intersectCustom)
 
 
     def configure_args(self):
