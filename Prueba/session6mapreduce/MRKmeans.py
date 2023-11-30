@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
             # You should store the new prototypes here for the next iteration
             if (i + 1) == args.iter or nomove:
-                new_proto_file = open(cwd + '/prototypes_last.txt', 'w')
+                new_proto_file = open(cwd + '/prototypes-final.txt', 'w')
             else:
                 new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
             
