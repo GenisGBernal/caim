@@ -97,7 +97,7 @@ class MRKmeansStep(MRJob):
         prototype = None
 
         for k,v in self.prototypes.items():
-            dist = self.jaccard(v, lwords)
+            dist = 1 - self.jaccard(v, lwords)
             if (dist < bestDist):
                 bestDist = dist
                 prototype = k
