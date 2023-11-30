@@ -65,44 +65,34 @@ if __name__ == '__main__':
                 new_proto[key] = value[1]
 
             # If your scripts returns the new assignments you could write them in a file here
-            nomove = (assign == new_assign)
+            new_assign_file = open(cwd + '/assignaments%d.txt' %(i+1), 'w')
+            for key in new_assign:
+                output = f"{key}:"
+                for item in new_assign[key]:
+                    output += f"{item} "
+                new_assign_file.write(f"{output}\n")
+            new_assign_file.close()
 
-            assigStr = ""
-            for k,v in new_assign.items():
-                assigStr += k + ":"
-                for doc in v:
-                    assigStr += doc + " "
-                assigStr += "\n"
-
-            protoStr = ""
-            for k,v in new_proto.items():
-                protoStr += k + ":"
-                for term in v:
-                    protoStr += term[0] + "+" + str(term[1]) + " "
-                protoStr += "\n"
-
-
-            assigFileName = "/assignments%d.txt"%(i+1)
-            protoFileName = "/prototypes%d.txt"%(i+1)
-            if (i+1 == args.iter or nomove):
-                assigFileName = "/assignments-final.txt"
-                protoFileName = "/prototypes-final.txt"
-
-            outputAssign = open(cwd + assigFileName, 'w')
-            outputAssign.write(assigStr)
-            outputAssign.close()
-            outputProtos = open(cwd + protoFileName, 'w')
-            outputProtos.write(protoStr)
-            outputProtos.close()
-
-
-
-            # You should store the new prototypes here for the next iteration
             # If you have saved the assignments, you can check if they have changed from the previous iteration
+            if new_assign == new_assign_file:
+                nomove = True
+            
             assign = new_assign
 
+            # You should store the new prototypes here for the next iteration
+            if (i + 1) == args.iter or nomove:
+                new_proto_file = open(cwd + '/prototypes_last.txt', 'w')
+            else:
+                new_proto_file = open(cwd + '/prototypes%d.txt' %(i+1), 'w')
+            
+            for key in new_proto:
+                output = f"{key}:"
+                for item in new_proto[key]:
+                    output += f"{item[0]} + {str(item[1])} "
+                new_proto_file.write(f"{output}\n")
+            new_proto_file.close()
 
-        print("Time= %f seconds" % (time.time() - tinit))
+        print(f"Time= {(time.time() - tinit)} seconds")
 
         if nomove:  # If there is no changes in two consecutive iteration we can stop
             print("Algorithm converged")
