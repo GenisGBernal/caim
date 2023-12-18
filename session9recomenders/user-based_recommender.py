@@ -11,7 +11,7 @@ def generate_m(movies_idx, users, ratings):
 
     x = ratings.iloc[2]
 
-    #All matrix values with -1.0
+    # All matrix values with -1.0
     m = {userId: {movieId: -1.0 for movieId in movies_idx} for userId in users}
 
     # Set matrix values efficiently
