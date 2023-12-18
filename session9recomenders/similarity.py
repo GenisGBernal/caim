@@ -6,54 +6,33 @@ def compute_similarity(l1: list, l2: list):
     # The current implementation returns a placeholder value of 1. Update this function 
     # to perform the appropriate similarity calculation and return the result.
 
-    ratings1 = [rating for rating in l1 if rating != -1.0]
-    ratings2 = [rating for rating in l2 if rating != -1.0]
+    vec1 = np.array(l1)
+    vec2 = np.array(l2)
 
-    list_ra = []
-    list_rb = []
-    for i in range(len(l1)):
-        if l1[i] != -1.0 and l2[i] != -1.0:
-            list_ra.append(l1[i])
-            list_rb.append(l2[i]) 
+        # Find indices where both vectors have valid ratings
+    valid_indices = np.where((vec1 != -1) & (vec2 != -1))[0]
     
-    if len(list_ra) == 0: return 0.0
+    # Extract valid ratings from both vectors
+    vec1_valid = vec1[valid_indices]
+    vec2_valid = vec2[valid_indices]
 
-    # Convert lists to numpy arrays for easy computation
-    ra = np.array(list_ra)
-    rb = np.array(list_rb)
+    # Subtract mean from each vector
+    vec1_valid -= np.mean(vec1_valid)
+    vec2_valid -= np.mean(vec2_valid)
 
-    # Calculate mean of each list
-    mean_ra = np.mean(np.array(ratings1))
-    mean_rb = np.mean(np.array(ratings2))
+    # Calculate cosine similarity
+    dot_product = np.dot(vec1_valid, vec2_valid)
+    magnitude_vec1 = np.linalg.norm(vec1_valid)
+    magnitude_vec2 = np.linalg.norm(vec2_valid)
 
-    # Calculate the difference vectors
-    diff_ra = ra - mean_ra
-    diff_rb = rb - mean_rb
-
-    # Calculate the dot product and the denominators
-    dot_product = np.sum(diff_ra * diff_rb)
-    denominator_ra = np.sum(diff_ra**2)
-    denominator_rb = np.sum(diff_rb**2)
-
-    # Calculate the final result
-    result = dot_product / (np.sqrt(denominator_ra) * np.sqrt(denominator_rb))
-
-    return result
-
-    # # Compute magnitudes
-    # magnitude1 = np.linalg.norm(array1)
-    # magnitude2 = np.linalg.norm(array2)
-    # if magnitude1 == 0 or magnitude2 == 0:
-    #     return 0
-
-    # # Compute dot product
-    # dot_product = np.dot(array1, array2)
-
-    # # Compute cosine similarity
-    # similarity = dot_product / (magnitude1 * magnitude2)
-
-    # return similarity
-
+    # Handle division by zero
+    if magnitude_vec1 == 0 or magnitude_vec2 == 0:
+        return 0.0
+    else:
+        similarity = dot_product / (magnitude_vec1 * magnitude_vec2)
+        return similarity
+    
+    
 if __name__ == "__main__":
     
     vector_a, vector_b = [0, 1], [1, 0]

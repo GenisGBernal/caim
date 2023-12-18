@@ -44,18 +44,22 @@ def user_based_recommender(target_user_idx, matrix):
 
     df = pd.DataFrame(data)
 
+    n_most_similar = 20
+    simiar_users = df.nlargest(n_most_similar, 'Similarity')
+    print(simiar_users)
+
     # Determine the unseen movies by the target user. Those films are identfied 
     # since don't have any rating. 
     not_rated_movies = [movieId for movieId, rating in target_user.items() if rating == -1.0]
      
     # Generate recommendations for unrated movies based on user similarity and ratings.
     # @ TODO 
-    avg_rating_target = get_avg(target_user_ratings)
+    avg_rating_target = get_avg(list(target_user.values()))
     expected_rates = []
     for movieId in not_rated_movies:
         x = 0
-        for index, row in df.iterrows():
-            x += row['Similarity']*(matrix[row['userId']][movieId]- get_avg(matrix[row['userId']].values()))
+        for _, row in simiar_users.iterrows():
+            x += row['Similarity']*(matrix[row['userId']][movieId] - get_avg(list(matrix[row['userId']].values())))
         expected_rate = avg_rating_target + x
         expected_rates.append(expected_rate)
     
