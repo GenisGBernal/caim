@@ -31,9 +31,7 @@ def get_avg(ratings):
 
 def user_based_recommender(target_user_idx, matrix):
     target_user = matrix[target_user_idx]
-    # target_user_ratings = list(matrix[])
     recommendations = []
-    
     # Compute the similarity between  the target user and each other user in the matrix. 
     # We recomend to store the results in a dataframe (userId and Similarity)
     data = {'userId': [], 'Similarity': []}
@@ -44,25 +42,26 @@ def user_based_recommender(target_user_idx, matrix):
 
     df = pd.DataFrame(data)
 
-    n_most_similar = 20
-    simiar_users = df.nlargest(n_most_similar, 'Similarity')
-    print(simiar_users)
+    # n_most_similar = 10
+    # simiar_users = df.nlargest(n_most_similar, 'Similarity')
+    similar_users = df[df['Similarity'] > 0.98]
 
     # Determine the unseen movies by the target user. Those films are identfied 
     # since don't have any rating. 
-    not_rated_movies = [movieId for movieId, rating in target_user.items() if rating == -1.0]
      
     # Generate recommendations for unrated movies based on user similarity and ratings.
     # @ TODO 
     avg_rating_target = get_avg(list(target_user.values()))
-    expected_rates = []
-    for movieId in not_rated_movies:
-        x = 0
-        for _, row in simiar_users.iterrows():
-            x += row['Similarity']*(matrix[row['userId']][movieId] - get_avg(list(matrix[row['userId']].values())))
-        expected_rate = avg_rating_target + x
-        expected_rates.append(expected_rate)
+    for movieId, rating in target_user.items(): 
+        if rating == -1.0:
+            expected_rate = avg_rating_target
+            for _, row in similar_users.iterrows():
+                similar_rate = matrix[row['userId']][movieId]
+                if similar_rate != -1.0:
+                    expected_rate += row['Similarity']*(similar_rate - get_avg(list(matrix[row['userId']].values())))
+            recommendations.append((movieId, expected_rate))
     
+    recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)
     return recommendations
 
 
