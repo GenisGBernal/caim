@@ -9,16 +9,16 @@ import utils as ut
 def generate_m(movies_idx, users, ratings):
     # Complete the datastructure for rating matrix 
 
-    x = ratings.iloc[2]
-
     #All matrix values with -1.0
     m = {userId: {movieId: -1.0 for movieId in movies_idx} for userId in users}
+    # m = {movieId: {userId: -1.0 for userId in users} for movieId in movies_idx}
 
     # Set matrix values efficiently
     for _, row in ratings.iterrows():
         m[row['userId']][row['movieId']] = row['rating']
+        # m[row['movieId']][row['userId']] = row['rating']
 
-    return m 
+    return pd.DataFrame(m)
 
 def get_avg(ratings):
     rated_ratings = [rate for rate in ratings if rate != -1.0]
@@ -30,18 +30,17 @@ def get_avg(ratings):
 
 
 def user_based_recommender(target_user_idx, matrix):
-    # target_user = matrix.iloc[target_user_idx]
     target_user = matrix[target_user_idx]
-    target_user_ratings = list(target_user.values())
+    # target_user_ratings = list(matrix[])
     recommendations = []
     
     # Compute the similarity between  the target user and each other user in the matrix. 
     # We recomend to store the results in a dataframe (userId and Similarity)
     data = {'userId': [], 'Similarity': []}
-    for userId, ratings in matrix.items():
-        if userId != target_user_idx:
-            rated_by_both_users_v1 = [v1 for v1, v2 in zip(target_user_ratings, ratings.values()) if v1 != -1.0 and v2 != -1.0]
-            rated_by_both_users_v2 = [v2 for v1, v2 in zip(target_user_ratings, ratings.values()) if v1 != -1.0 and v2 != -1.0]
+    for row in range(len(matrix[1])): 
+        if matrix[row] != target_user_idx:
+            rated_by_both_users_v1 = [v1 for v1, v2 in zip(target_user, matrix.iloc[index, :]) if v1 != -1.0 and v2 != -1.0]
+            rated_by_both_users_v2 = [v2 for v1, v2 in zip(target_user, matrix.iloc[index, :]) if v1 != -1.0 and v2 != -1.0]
             data['userId'].append(userId)
             data['Similarity'].append(sim.compute_similarity(rated_by_both_users_v1, rated_by_both_users_v2))
 
@@ -80,7 +79,7 @@ if __name__ == "__main__":
     movies_idx = dataset["movies.csv"]["movieId"]
     users_idy = list(set(ratings_train["userId"].values))
     m = generate_m(movies_idx, users_idy, ratings_train)
-        
+
     # user-to-user similarity
     target_user_idx = 123
     recommendations = user_based_recommender(target_user_idx, m)
