@@ -18,7 +18,7 @@ def generate_m(movies_idx, users, ratings):
         m[row['userId']][row['movieId']] = row['rating']
         # m[row['movieId']][row['userId']] = row['rating']
 
-    return pd.DataFrame(m)
+    return m
 
 def get_avg(ratings):
     rated_ratings = [rate for rate in ratings if rate != -1.0]
@@ -37,12 +37,10 @@ def user_based_recommender(target_user_idx, matrix):
     # Compute the similarity between  the target user and each other user in the matrix. 
     # We recomend to store the results in a dataframe (userId and Similarity)
     data = {'userId': [], 'Similarity': []}
-    for row in range(len(matrix[1])): 
-        if matrix[row] != target_user_idx:
-            rated_by_both_users_v1 = [v1 for v1, v2 in zip(target_user, matrix.iloc[index, :]) if v1 != -1.0 and v2 != -1.0]
-            rated_by_both_users_v2 = [v2 for v1, v2 in zip(target_user, matrix.iloc[index, :]) if v1 != -1.0 and v2 != -1.0]
+    for userId, ratings in matrix.items(): 
+        if userId != target_user_idx:  
             data['userId'].append(userId)
-            data['Similarity'].append(sim.compute_similarity(rated_by_both_users_v1, rated_by_both_users_v2))
+            data['Similarity'].append(sim.compute_similarity(list(target_user.values()), list(ratings.values())))
 
     df = pd.DataFrame(data)
 
