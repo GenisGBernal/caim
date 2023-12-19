@@ -99,7 +99,7 @@ if __name__ == "__main__":
     m = generate_m(movies_idx, users_idy, ratings_train)
 
     # user-to-user similarity
-    target_user_idx = 123
+    target_user_idx = 105
     recommendations = user_based_recommender(target_user_idx, m)
      
     # The following code print the top 5 recommended films to the user
@@ -110,7 +110,21 @@ if __name__ == "__main__":
     
     # Validation
     matrixmpa_genres = ut.matrix_genres(dataset["movies.csv"])
+
+    #------------------------------ VALIDATION DATA ----------------------------------------------
+
+    m_validate = generate_m(movies_idx, users_idy, ratings_val)
+    target_user = m_validate[target_user_idx]
+    sorted_movies_validate_dictionary = sorted(target_user.items(), key=lambda x: x[1], reverse=True)
+
+    top5MoviesValidate = [item[0] for item in sorted_movies_validate_dictionary[:5]]
+
+    validationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
+    validationGenres = np.array(validationGenres)
+    for recommendedMoviedId in top5MoviesValidate:
+        validationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
     
+    #------------------------------ USER BASED VALIDATION ----------------------------------------------
     top5AnswerTrain = [recomendation[0] for recomendation in recommendations[:5]]
 
     userBasedRecommendationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
@@ -118,23 +132,22 @@ if __name__ == "__main__":
     for recommendedMoviedId in top5AnswerTrain:
         userBasedRecommendationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
 
-    m_validate = generate_m(movies_idx, users_idy, ratings_val)
-    target_user = m_validate[target_user_idx]
-    sorted_movies_validate_dictionary = sorted(target_user.items(), key=lambda x: x[1], reverse=True)
-
-    top5AnswerValidate = [item[0] for item in sorted_movies_validate_dictionary[:5]]
-
-    userBasedValidationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
-    userBasedValidationGenres = np.array(userBasedValidationGenres)
-    for recommendedMoviedId in top5AnswerValidate:
-        userBasedValidationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
-
-    sim_user = sim_vec(normalize(userBasedRecommendationGenres), normalize(userBasedValidationGenres))
+    sim_user = sim_vec(normalize(userBasedRecommendationGenres), normalize(validationGenres))
 
     print("Similitude between train and validation in user method: {}".format(sim_user))
 
-    
 
+    #------------------------------ NAIVE BASED VALIDATION ----------------------------------------------
+    top5AnswerNaive = list(nav.naive_recommender(dataset["ratings.csv"], dataset["movies.csv"], 5)["movieId"])
 
+    naiveValidationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
+    naiveValidationGenres = np.array(naiveValidationGenres)
+    for recommendedMoviedId in top5AnswerNaive:
+        naiveValidationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
 
+    sim_naive = sim_vec(normalize(naiveValidationGenres), normalize(validationGenres))
+
+    print("Similitude between train and validation in naive method: {}".format(sim_naive))
+
+    print("hola")
 
