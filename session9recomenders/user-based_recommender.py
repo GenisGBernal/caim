@@ -44,7 +44,7 @@ def user_based_recommender(target_user_idx, matrix):
 
     # n_most_similar = 10
     # simiar_users = df.nlargest(n_most_similar, 'Similarity')
-    similar_users = df[df['Similarity'] > 0.98]
+    similar_users = df[df['Similarity'] > 0.95]
 
     # Determine the unseen movies by the target user. Those films are identfied 
     # since don't have any rating. 
@@ -64,6 +64,23 @@ def user_based_recommender(target_user_idx, matrix):
     recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)
     return recommendations
 
+def normalize(w):
+    """
+    Normalizes the weights in t so that they form a unit-length vector
+    It is assumed that not all weights are 0
+    :param tw:
+    :return:
+    """
+    magnitude = np.linalg.norm(w)
+    tw_normalized = [weight/ magnitude for weight in w]
+
+    return tw_normalized
+
+def sim_vec(vec1, vec2):
+    sim = 0
+    for i in range(len(vec1)):
+        sim += vec1[i]*vec2[i]
+    return sim
 
 
 if __name__ == "__main__":
@@ -94,12 +111,29 @@ if __name__ == "__main__":
     # Validation
     matrixmpa_genres = ut.matrix_genres(dataset["movies.csv"])
     
-     
+    top5AnswerTrain = [recomendation[0] for recomendation in recommendations[:5]]
+
+    userBasedRecommendationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
+    userBasedRecommendationGenres = np.array(userBasedRecommendationGenres)
+    for recommendedMoviedId in top5AnswerTrain:
+        userBasedRecommendationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
+
+    m_validate = generate_m(movies_idx, users_idy, ratings_val)
+    target_user = m_validate[target_user_idx]
+    sorted_movies_validate_dictionary = sorted(target_user.items(), key=lambda x: x[1], reverse=True)
+
+    top5AnswerValidate = [item[0] for item in sorted_movies_validate_dictionary[:5]]
+
+    userBasedValidationGenres = [0.0] * len(matrixmpa_genres.iloc[0])
+    userBasedValidationGenres = np.array(userBasedValidationGenres)
+    for recommendedMoviedId in top5AnswerValidate:
+        userBasedValidationGenres += np.array(list(matrixmpa_genres.loc[recommendedMoviedId]))
+
+    sim_user = sim_vec(normalize(userBasedRecommendationGenres), normalize(userBasedValidationGenres))
+
+    print("Similitude between train and validation in user method: {}".format(sim_user))
+
     
-
-
-
-
 
 
 
