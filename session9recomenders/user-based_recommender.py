@@ -46,6 +46,11 @@ def user_based_recommender(target_user_idx, matrix):
     # simiar_users = df.nlargest(n_most_similar, 'Similarity')
     similar_users = df[df['Similarity'] > 0.95]
 
+
+    similar_users_mean_rate = []
+    for _, row in similar_users.iterrows():
+        similar_users_mean_rate.append(get_avg(list(matrix[row['userId']].values())))
+    similar_users['mean'] = similar_users_mean_rate
     # Determine the unseen movies by the target user. Those films are identfied 
     # since don't have any rating. 
      
@@ -58,7 +63,7 @@ def user_based_recommender(target_user_idx, matrix):
             for _, row in similar_users.iterrows():
                 similar_rate = matrix[row['userId']][movieId]
                 if similar_rate != -1.0:
-                    expected_rate += row['Similarity']*(similar_rate - get_avg(list(matrix[row['userId']].values())))
+                    expected_rate += row['Similarity']*(similar_rate - row['mean'])
             recommendations.append((movieId, expected_rate))
     
     recommendations = sorted(recommendations, key=lambda x: x[1], reverse=True)
