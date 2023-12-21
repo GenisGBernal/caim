@@ -2,14 +2,14 @@ import numpy as np
 
 
 def compute_similarity(l1: list, l2: list):
-    # # @TODO: Implement the actual computation of similarity between vector1 and vector2.
+    # Implement the actual computation of similarity between vector1 and vector2.
     # The current implementation returns a placeholder value of 1. Update this function 
     # to perform the appropriate similarity calculation and return the result.
 
     vec1 = np.array(l1)
     vec2 = np.array(l2)
 
-        # Find indices where both vectors have valid ratings
+    # Find indices where both vectors have valid ratings
     valid_indices = np.where((vec1 != -1) & (vec2 != -1))[0]
     
     # Extract valid ratings from both vectors
