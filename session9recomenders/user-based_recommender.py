@@ -11,12 +11,10 @@ def generate_m(movies_idx, users, ratings):
 
     #All matrix values with -1.0
     m = {userId: {movieId: -1.0 for movieId in movies_idx} for userId in users}
-    # m = {movieId: {userId: -1.0 for userId in users} for movieId in movies_idx}
 
     # Set matrix values efficiently
     for _, row in ratings.iterrows():
         m[row['userId']][row['movieId']] = row['rating']
-        # m[row['movieId']][row['userId']] = row['rating']
 
     return m
 
@@ -32,6 +30,7 @@ def get_avg(ratings):
 def user_based_recommender(target_user_idx, matrix):
     target_user = matrix[target_user_idx]
     recommendations = []
+
     # Compute the similarity between  the target user and each other user in the matrix. 
     # We recomend to store the results in a dataframe (userId and Similarity)
     data = {'userId': [], 'Similarity': []}
@@ -42,15 +41,10 @@ def user_based_recommender(target_user_idx, matrix):
 
     df = pd.DataFrame(data)
 
-    # n_most_similar = 10
-    # simiar_users = df.nlargest(n_most_similar, 'Similarity')
+    # Pick the most similar users to target user
     similar_users = df[df['Similarity'] > 0.95]
-
-    # Determine the unseen movies by the target user. Those films are identfied 
-    # since don't have any rating. 
      
     # Generate recommendations for unrated movies based on user similarity and ratings.
-    # @ TODO 
     avg_rating_target = get_avg(list(target_user.values()))
     for movieId, rating in target_user.items(): 
         if rating == -1.0:
@@ -86,7 +80,7 @@ def sim_vec(vec1, vec2):
 if __name__ == "__main__":
     
     # Load the dataset
-    path_to_ml_latest_small = 'C:/Users/thema/Desktop/proyectos/caim/lab/session9recomenders/ml-latest-small/'
+    path_to_ml_latest_small = 'D:/Users/M/Documents/Universidad/Quatrimestre_9/CAIM/caim/session9recomenders/ml-latest-small/'
     dataset = ut.load_dataset_from_source(path_to_ml_latest_small)
 
     # Ratings data
@@ -148,6 +142,4 @@ if __name__ == "__main__":
     sim_naive = sim_vec(normalize(naiveValidationGenres), normalize(validationGenres))
 
     print("Similitude between train and validation in naive method: {}".format(sim_naive))
-
-    print("hola")
 

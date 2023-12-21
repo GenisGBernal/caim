@@ -18,7 +18,7 @@ def naive_recommender(ratings: object, movies:object, k: int = 10) -> list:
     movies_stats_title['weighted_rating'] = ((movies_stats_title['rating_count'] * movies_stats_title['rating_mean'] + m * C) / (movies_stats_title['rating_count'] + m)).round(2)
     
     most_seen_movies = movies_stats_title.sort_values(by='weighted_rating', ascending=False)[['movieId', 'title', 'weighted_rating']]
-
+    
     return most_seen_movies[:k]
 
 
